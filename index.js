@@ -383,7 +383,7 @@ function getCatList() {
             result.map((item) => {
                 data += `
                 <div class="search-card">
-                  <img src="${item.image}" alt="${item.name}">
+                 <a  href ="details.html?Name=${item.name}&id=${item.id}"><img src="${item.name}"> <img src="${item.image}" alt="${item.name}"></a>
                   <p>${item.name}</p>
                   <div class="text-right">
                     <button class="update-button">Update</button>
@@ -396,6 +396,165 @@ function getCatList() {
         }
     })
     .catch(error => console.log('error', error));
+}
+
+
+
+
+
+// here take note of the link element linking category
+
+function getUrlDetails() {
+    const det = document.querySelector(".det");
+    const params = new URLSearchParams(window.location.search);
+    const getName = params.get('name');
+    det.innerHTML = getName;
+}
+
+
+function subCategory(event) {
+    event.preventDefault();
+    const getSpin = document.querySelector(".spin");
+    getSpin.style.display = "inline-block";
+    const getName = document.getElementById("subCatName").value;
+    const getImg = document.getElementById("subCatImg").files[0];
+    if (getName === "" || getImg === "") {
+        Swal.fire({
+            icon: 'info',
+            text: "All fields are required",
+            confirmButtonColor: '#2D85DE'
+        })
+        getSpin.style.display = "none";
+    }
+    else {
+        const getToken = localStorage.getItem("admin");
+        const myToken = JSON.parse(getToken);
+        const token = myToken.token;
+        const dashHeader = new Headers();
+        dashHeader.append("Authorization", `Bearer ${token}`);
+        const params = new URLSearchParams(window.location.search);
+        const getId = params.get('id');
+        const subData = new FormData();
+        subData.append("name", getName);
+        subData.append("image", getImg);
+        subData.append("category_id", getId);
+        const subMethod = {
+            method: 'POST',
+            headers: dashHeader,
+            body: subData
+        }
+        const url = `${baseUrl}create_subcategory`;
+        fetch(url, subMethod)
+        .then(response => response.json())
+        .then(result => {
+            console.log(result)
+            if (result.status === "success") {
+                Swal.fire({
+                    icon: 'success',
+                    text: `${result.message}`,
+                    confirmButtonColor: '#2D85DE'
+                })
+                setTimeout(() => {
+                    location.reload();
+                }, 4000)
+            }
+            else {
+                Swal.fire({
+                    icon: 'info',
+                    text: `${result.message}`,
+                    confirmButtonColor: '#2D85DE'
+                })
+                getSpin.style.display = "none";
+            }
+        })
+        .catch(error => console.log('error', error));
+    }
+}
+function getSubList() {
+    const list = document.querySelector(".list");
+    const getToken = localStorage.getItem("admin");
+    const myToken = JSON.parse(getToken);
+    const token = myToken.token;
+    const dashHeader = new Headers();
+    dashHeader.append("Authorization", `Bearer ${token}`);
+    const params = new URLSearchParams(window.location.search);
+    const getId = params.get('id');
+    const url = `${baseUrl}category_details/${getId}`;
+    const subMethod = {
+        method: 'GET',
+        headers: dashHeader
+    }
+    let data = [];
+    fetch(url, subMethod)
+    .then(response => response.json())
+    .then(result => {
+        console.log(result)
+        if (result.length === 0) {
+            list.innerHTML = `<div class="col-sm-12 col-md-12 offset-lg-4 col-lg-8">
+                                  <h5>No Subcategory Found</h5>
+                              </div>`
+        }
+        else {
+            result.map((item) => {
+                data += `
+                <div class="col-sm-12 col-md-12 col-lg-4">
+                    <div class="search-card">
+                        <img src="${item.image}">
+                        <p>${item.name}</p>
+                        <div class="text-right">
+                          <button class="update-button">Update</button>
+                        </div>
+                    </div>
+                </div>
+                `
+                list.innerHTML = data;
+            })
+        }
+    })
+    .catch(error => console.log('error', error));
+}
+
+
+
+function showCategoryModal(id) {
+    const getName = document.getElementById("updateName");
+    const getModal = document.getElementById("my-modal3");
+    getModal.style.display = "block";
+    const getToken = localStorage.getItem("admin");
+    const myToken = JSON.parse(getToken);
+    const token = myToken.token;
+    const dashHeader = new Headers();
+    dashHeader.append("Authorization", `Bearer ${token}`);
+    const catMethod = {
+        method: 'GET',
+        headers: dashHeader
+    }
+    const url = `${baseUrl}get_details?category_id=${id}`;
+    fetch(url, catMethod)
+    .then(response => response.json())
+    .then(result => {
+        console.log(result)
+        getName.setAttribute("value", result.name)
+    })
+    .catch(error => console.log('error', error));
+}
+
+
+
+
+
+
+
+function logout() {
+    localStorage.clear();
+    Swal.fire({
+        icon: 'success',
+        text: "Logged out successful",
+        confirmButtonColor: '#2D85DE'
+    })
+    setTimeout(() => {
+        location.href = "index.html"
+    }, 3000)
 }
 
 
