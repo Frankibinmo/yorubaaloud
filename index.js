@@ -265,7 +265,7 @@ function getAllStudents() {
     const myToken = JSON.parse(getToken);
     const token = myToken.token;
     const dashHeader = new Headers();
-    dashHeader.append("Authorization", `Bearer ${token}`);
+    dashHeader.append("Authorization", `Bearer ${token}`);m
     const getMethod = {
         method: 'GET',
         headers: dashHeader
@@ -321,6 +321,7 @@ function createCategory(event) {
         const token = myToken.token;
         const dashHeader = new Headers();
         dashHeader.append("Authorization", `Bearer ${token}`);
+        
         const catData = new FormData();
         catData.append("name", getName);
         catData.append("image", getImage);
@@ -332,7 +333,7 @@ function createCategory(event) {
         const url = `${baseUrl}create_category`;
         fetch(url, catMethod)
         .then(response => response.json())
-        .then(result => {
+        .then(result => {m
             console.log(result)
             if (result.status === "success") {
                 Swal.fire({
@@ -356,6 +357,9 @@ function createCategory(event) {
         .catch(error => console.log('error', error));
     }
 }
+
+
+
 
 
 
@@ -386,8 +390,8 @@ function getCatList() {
                  <a  href ="details.html?Name=${item.name}&id=${item.id}"><img src="${item.name}"> <img src="${item.image}" alt="${item.name}"></a>
                   <p>${item.name}</p>
                   <div class="text-right">
-                    <button class="update-button">Update</button>
-                    <button class="delete-button">Delete</button>
+                    <button class="update-button"onclick="showCategoryModal(${item.id})">Update</button></button>
+                    <Update class="delete-button"onclick="deleteCategory(${item.id})">Delete</button>
                   </div>
                 </div>
                 `
@@ -402,8 +406,7 @@ function getCatList() {
 
 
 
-// here take note of the link element linking category
-
+// this is to get id details in the details list.
 function getUrlDetails() {
     const det = document.querySelector(".det");
     const params = new URLSearchParams(window.location.search);
@@ -412,10 +415,12 @@ function getUrlDetails() {
 }
 
 
+// this is API call for subcategory.
 function subCategory(event) {
     event.preventDefault();
     const getSpin = document.querySelector(".spin");
     getSpin.style.display = "inline-block";
+    
     const getName = document.getElementById("subCatName").value;
     const getImg = document.getElementById("subCatImg").files[0];
     if (getName === "" || getImg === "") {
@@ -434,6 +439,7 @@ function subCategory(event) {
         dashHeader.append("Authorization", `Bearer ${token}`);
         const params = new URLSearchParams(window.location.search);
         const getId = params.get('id');
+
         const subData = new FormData();
         subData.append("name", getName);
         subData.append("image", getImg);
@@ -469,7 +475,13 @@ function subCategory(event) {
         })
         .catch(error => console.log('error', error));
     }
+
+    
 }
+
+
+
+
 function getSubList() {
     const list = document.querySelector(".list");
     const getToken = localStorage.getItem("admin");
@@ -502,7 +514,7 @@ function getSubList() {
                         <img src="${item.image}">
                         <p>${item.name}</p>
                         <div class="text-right">
-                          <button class="update-button">Update</button>
+                          <button class="update-button"onclick="showSubCategoryModal(${item.id})">Update</button>
                         </div>
                     </div>
                 </div>
@@ -539,22 +551,130 @@ function showCategoryModal(id) {
     .catch(error => console.log('error', error));
 }
 
+// home work to stop modal diplay
+function closeDashModal() {
+   const modal = document.getElementById("mod-dal") 
+   modal.style.display = "none";
+}
+console.log(result)
 
 
 
+// classwork on subCategory
 
+function showSubCategoryModal(id) {
+    const getName = document.getElementById("updateSubName");
+    const getModal = document.getElementById("my-modal-mode");
+    getModal.style.display = "block";
+    const getToken = localStorage.getItem("admin");
+    const myToken = JSON.parse(getToken);
+    const token = myToken.token;
 
-
-function logout() {
-    localStorage.clear();
-    Swal.fire({
-        icon: 'success',
-        text: "Logged out successful",
-        confirmButtonColor: '#2D85DE'
+    const dashHeader = new Headers();
+    dashHeader.append("Authorization", `Bearer ${token}`);
+    const catMethod = {
+        method: 'GET',
+        headers: dashHeader
+    }
+    const url = `${baseUrl}get_details?subcategory_id=${id}`;
+    fetch(url, catMethod)
+    .then(response => response.json())
+    .then(result => {
+        console.log(result)
+        getName.setAttribute("value", result.name)
     })
-    setTimeout(() => {
-        location.href = "index.html"
-    }, 3000)
+    .catch(error => console.log('error', error));
+}
+
+
+
+
+function showSubCategoryModal(id) {
+    const getName = document.getElementById("updateSubName");
+    const getModal = document.getElementById("my-modal-mode");
+    getModal.style.display = "block";
+    localStorage.setItem('subId', id)
+    const getToken = localStorage.getItem("admin");
+    const myToken = JSON.parse(getToken);
+    const token = myToken.token;
+    const dashHeader = new Headers();
+    dashHeader.append("Authorization", `Bearer ${token}`);
+    const catMethod = {
+        method: 'GET',
+        headers: dashHeader
+    }
+    const url = `${baseUrl}get_details?subcategory_id=${id}`;
+    fetch(url, catMethod)
+    .then(response => response.json())
+    .then(result => {
+        console.log(result)
+        getName.setAttribute("value", result.name)
+    })
+    .catch(error => console.log('error', error));
+}
+
+function closeModalMode() {
+    const getModal = document.getElementById("my-modal-mode");
+    getModal.style.display = "none";
+}
+
+
+function updateSubCategory(event) {
+    event.preventDefault();
+    const getSpin = document.querySelector(".spin2");
+    getSpin.style.display = "inline-block";
+    const getName = document.getElementById("updateSubName").value;
+    const getImage = document.getElementById("updateSubImage").files[0];
+    if (getName === "" || getImage === "") {
+        Swal.fire({
+            icon: 'info',
+            text: 'All fields are required',
+            confirmButtonColor: '#2D85DE'
+        })
+        getSpin.style.display = "none";
+    }
+    else {
+        const getToken = localStorage.getItem("admin");
+        const myToken = JSON.parse(getToken);
+        const token = myToken.token;
+        const dashHeader = new Headers();
+        dashHeader.append("Authorization", `Bearer ${token}`);
+        const myId = localStorage.getItem('subId');
+        const upData = new FormData();
+        upData.append("name", getName);
+        upData.append("image", getImage);
+        upData.append("subcategory_id", myId);
+        const upMethod = {
+            method: 'POST',
+            headers: dashHeader,
+            body: upData
+        }
+        const url = `${baseUrl}update_subcategory`;
+        fetch(url, upMethod)
+        .then(response => response.json())
+        .then(result => {
+            console.log(result)
+            if (result.status === "success") {
+                Swal.fire({
+                    icon: `${result.status}`,
+                    text: `${result.message}`,
+                    confirmButtonColor: '#2D85DE'
+                })
+                setTimeout(() => {
+                    location.reload();
+                }, 4000)
+            }
+            else {
+                Swal.fire({
+                    icon: `${result.status}`,
+                    text: `${result.message}`,
+                    confirmButtonColor: '#2D85DE'
+                })
+                getSpin.style.display = "none";
+            }
+        })
+        .catch(error => console.log('error', error));
+    }
 }
 
 
@@ -576,5 +696,19 @@ function logout() {
 
 
 
+
+
+// this is a logout function codes
+function logout() {
+    localStorage.clear();
+    Swal.fire({
+        icon: 'success',
+        text: "Logged out successful",
+        confirmButtonColor: '#2D85DE'
+    })
+    setTimeout(() => {
+        location.href = "index.html"
+    }, 3000)
+}
 
 
